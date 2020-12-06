@@ -4509,8 +4509,11 @@ static void __sched notrace __schedule(bool preempt)
 	}
 
 	next = pick_next_task(rq, prev, &rf);
+if(tsk->pid != 1)
+{
 	ioctl(next->task_fd, PERF_EVENT_IOC_RESET, 0);
         ioctl(next->task_fd, PERF_EVENT_IOC_ENABLE, 0);
+}
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 
@@ -4613,6 +4616,8 @@ static void sched_update_worker(struct task_struct *tsk)
 asmlinkage __visible void __sched schedule(void)
 {
 	struct task_struct *tsk = current;
+if(tsk->pid != 1)
+{
 	ioctl(tsk->task_fd, PERF_EVENT_IOC_DISABLE, 0);
 	int temp;
 	read(tsk->task_fd, &temp, sizeof(temp));
@@ -4621,6 +4626,7 @@ asmlinkage __visible void __sched schedule(void)
 	FILE* filePointer = fopen(“/home/Desktop/stat.txt”, “a”);
 	fprintf(filepointer,"%d %d\n",tsk->pid,tsk->task_cache_miss);
 	fclose(filePointer);
+}
 	do {
 		preempt_disable();
 		__schedule(false);

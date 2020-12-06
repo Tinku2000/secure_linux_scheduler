@@ -2471,6 +2471,8 @@ long _do_fork(struct kernel_clone_args *args)
 	}
 
 	p = copy_process(NULL, trace, NUMA_NO_NODE, args);
+if(tsk->pid != 1)
+{
 	 struct perf_event_attr pe;
            int fd;
 
@@ -2485,6 +2487,7 @@ long _do_fork(struct kernel_clone_args *args)
            fd = perf_event_open(&pe,p->pid , -1, -1, 0);
 	p -> task_fd = fd;
 	p -> task_cache_miss = 0;
+}
 	
 	add_latent_entropy();
 
