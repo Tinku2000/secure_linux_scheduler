@@ -102,12 +102,6 @@
 #include <asm/mmu_context.h>
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
- #include <stdio.h>
-       #include <unistd.h>
-       #include <string.h>
-       #include <sys/ioctl.h>
-       #include <linux/perf_event.h>
-       #include <asm/unistd.h>
 
 #include <trace/events/sched.h>
 
@@ -2418,16 +2412,6 @@ struct mm_struct *copy_init_mm(void)
  *
  * args->exit_signal is expected to be checked for sanity by the caller.
  */
-static long
-       perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
-                       int cpu, int group_fd, unsigned long flags)
-       {
-           int ret;
-
-           ret = syscall(__NR_perf_event_open, hw_event, pid, cpu,
-                          group_fd, flags);
-           return ret;
-       }
 
 long _do_fork(struct kernel_clone_args *args)
 {
@@ -2471,23 +2455,8 @@ long _do_fork(struct kernel_clone_args *args)
 	}
 
 	p = copy_process(NULL, trace, NUMA_NO_NODE, args);
-if(tsk->pid != 1)
-{
-	 struct perf_event_attr pe;
-           int fd;
 
-           memset(&pe, 0, sizeof(pe));
-           pe.type = PERF_TYPE_HARDWARE;
-           pe.size = sizeof(pe);
-           pe.config = PERF_COUNT_HW_CACHE_MISSES;
-           pe.disabled = 1;
-           pe.exclude_kernel = 1;
-           pe.exclude_hv = 1;
-
-           fd = perf_event_open(&pe,p->pid , -1, -1, 0);
-	p -> task_fd = fd;
-	p -> task_cache_miss = 0;
-}
+	p -> task_br_misp = 0;
 	
 	add_latent_entropy();
 
