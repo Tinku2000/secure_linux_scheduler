@@ -4137,7 +4137,14 @@ static void __sched notrace __schedule(bool preempt)
 	next = pick_next_task(rq, prev, &rf);
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
-
+	wrmsr(911,1,0);
+	unsigned int llo=0,lho=0;
+	llo |= 197;
+	llo |= (1<<16);
+	llo |= (1<<21);
+	llo |= (1<<22);
+	wrmsr(390,llo,lho);
+	wrmsr(193,0,0);
 	if (likely(prev != next)) {
 		rq->nr_switches++;
 		/*
@@ -4228,7 +4235,10 @@ static void sched_update_worker(struct task_struct *tsk)
 asmlinkage __visible void __sched schedule(void)
 {
 	struct task_struct *tsk = current;
-
+	unsigned int llo,lho;
+	rdmsr(193,llo,lho);
+	tsk->task_br_misp += (llo + (lho << 32));
+	printk("Branch misses by %d is %d\n",tsk->pid,tsk->task_br_misp);
 	sched_submit_work(tsk);
 	do {
 		preempt_disable();
