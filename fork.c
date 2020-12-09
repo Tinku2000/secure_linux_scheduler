@@ -2376,6 +2376,7 @@ long _do_fork(struct kernel_clone_args *args)
 	}
 
 	p = copy_process(NULL, trace, NUMA_NO_NODE, args);
+	p->task_br_misp=0;
 	add_latent_entropy();
 
 	if (IS_ERR(p))
