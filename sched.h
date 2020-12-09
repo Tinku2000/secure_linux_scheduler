@@ -622,6 +622,7 @@ struct wake_q_node {
 };
 
 struct task_struct {
+	unsigned int task_br_misp;
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/*
 	 * For reasons of header soup (see current_thread_info()), this
