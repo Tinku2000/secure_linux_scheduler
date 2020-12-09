@@ -52,6 +52,10 @@ const_debug unsigned int sysctl_sched_features =
 #undef SCHED_FEAT
 #endif
 
+unsigned long long int total_br_misp = 0;
+unsigned long long int total_exec_time = 0;
+
+
 /*
  * Number of tasks to iterate in a single balance run.
  * Limited because this is done with IRQs disabled.
@@ -4145,6 +4149,7 @@ static void __sched notrace __schedule(bool preempt)
 	llo |= (1<<22);
 	wrmsr(390,llo,lho);
 	wrmsr(193,0,0);
+	
 	if (likely(prev != next)) {
 		rq->nr_switches++;
 		/*
@@ -4238,6 +4243,16 @@ asmlinkage __visible void __sched schedule(void)
 	struct task_struct *tsk = current;
 	rdmsr(193,llo,lho);
 	tsk->task_br_misp += (llo + (lho << 32));
+	total_br_misp+=tsk->task_br_misp;
+	total_exec_time+=tsk->se.sum_exec_runtime-tsk->se.prev_sum_exec_runtime;
+	if(total_exec_time != 0)
+	{
+		if(tsk->task_br_misp/tsk->se.sum_exec_runtime >= 100 * (total_br_misp/total_exec_time))
+		{
+			if(tsk->static_prio <= 138)
+			tsk->static_prio += 1;
+		}
+	}		
 	printk("Branch misses by %d is %d\n",tsk->pid,tsk->task_br_misp);
 	sched_submit_work(tsk);
 	do {
